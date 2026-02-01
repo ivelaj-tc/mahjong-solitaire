@@ -1,0 +1,7 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <rect x="40" y="80" width="60" height="42" rx="10" fill="#F7F2E8" stroke="#B8A98F" stroke-width="3"/>
+  <rect x="40" y="62" width="60" height="24" rx="8" fill="#E35E5E"/>
+  <rect x="40" y="76" width="60" height="10" rx="5" fill="#214542"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">SUSHI</text>
+</svg>

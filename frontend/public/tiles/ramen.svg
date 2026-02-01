@@ -1,0 +1,10 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <rect x="40" y="98" width="60" height="28" rx="12" fill="#E9C9A7" stroke="#B58B5A" stroke-width="3"/>
+  <path d="M44 98 C48 86 56 78 70 78 C84 78 92 86 96 98" stroke="#D8864A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M48 90 C54 82 62 78 70 78" stroke="#E6A86B" stroke-width="3" fill="none"/>
+  <path d="M62 110 C68 114 72 114 78 110" stroke="#9C4B2A" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="54" cy="106" r="6" fill="#C64534"/>
+  <circle cx="86" cy="106" r="6" fill="#C64534"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">RAMEN</text>
+</svg>

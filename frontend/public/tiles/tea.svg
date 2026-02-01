@@ -1,0 +1,9 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <rect x="46" y="90" width="48" height="34" rx="10" fill="#F7E0B4" stroke="#B88A57" stroke-width="3"/>
+  <rect x="52" y="96" width="36" height="22" rx="8" fill="#9B5C3B"/>
+  <path d="M94 96 C104 98 104 112 94 114" stroke="#B88A57" stroke-width="3" fill="none"/>
+  <path d="M60 76 C56 68 56 62 62 56" stroke="#B88A57" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M78 76 C74 68 74 62 80 56" stroke="#B88A57" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">TEA</text>
+</svg>

@@ -1,0 +1,11 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <polygon points="36,56 52,30 68,56" fill="#E86A2F"/>
+  <polygon points="72,56 88,30 104,56" fill="#E86A2F"/>
+  <circle cx="70" cy="96" r="34" fill="#F19154" stroke="#8A3F1D" stroke-width="3"/>
+  <circle cx="58" cy="92" r="6" fill="#3A1B0B"/>
+  <circle cx="82" cy="92" r="6" fill="#3A1B0B"/>
+  <path d="M70 98 L64 108 H76 Z" fill="#3A1B0B"/>
+  <path d="M56 110 C64 118 76 118 84 110" stroke="#3A1B0B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">FOX</text>
+</svg>

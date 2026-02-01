@@ -1,0 +1,6 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <path d="M36 108 C42 80 58 66 70 66 C82 66 98 80 104 108 C94 126 80 134 70 134 C60 134 46 126 36 108" fill="#F9E6C9" stroke="#C6A178" stroke-width="3"/>
+  <path d="M46 96 C54 86 62 82 70 82 C78 82 86 86 94 96" stroke="#C6A178" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">DUMPLING</text>
+</svg>

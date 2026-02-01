@@ -1,0 +1,10 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <circle cx="70" cy="90" r="40" fill="#E7B655" stroke="#8C6B2C" stroke-width="3"/>
+  <circle cx="70" cy="98" r="26" fill="#F7E0B4" stroke="#8C6B2C" stroke-width="3"/>
+  <circle cx="60" cy="92" r="5" fill="#3A1B0B"/>
+  <circle cx="80" cy="92" r="5" fill="#3A1B0B"/>
+  <path d="M70 98 L64 106 H76 Z" fill="#3A1B0B"/>
+  <path d="M60 110 C64 116 76 116 80 110" stroke="#3A1B0B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">LION</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FDF7EB" stroke="#C9A36B" stroke-width="4"/>
+  <circle cx="70" cy="98" r="34" fill="#7BC96F" stroke="#3C6E3B" stroke-width="3"/>
+  <circle cx="52" cy="70" r="12" fill="#A6E3A1" stroke="#3C6E3B" stroke-width="3"/>
+  <circle cx="88" cy="70" r="12" fill="#A6E3A1" stroke="#3C6E3B" stroke-width="3"/>
+  <circle cx="52" cy="70" r="4" fill="#1B1B1B"/>
+  <circle cx="88" cy="70" r="4" fill="#1B1B1B"/>
+  <path d="M56 104 C62 112 78 112 84 104" stroke="#1B1B1B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#3A2B1A" letter-spacing="2">FROG</text>
+</svg>

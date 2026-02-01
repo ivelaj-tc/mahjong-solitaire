@@ -1,0 +1,6 @@
+<svg width="140" height="180" viewBox="0 0 140 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="124" height="164" rx="20" fill="#FFFDF8" stroke="#E2D3BE" stroke-width="4"/>
+  <path d="M40 88 C60 68 86 68 100 88 C88 108 62 112 40 88" stroke="#D9C7AB" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="70" cy="94" r="10" fill="#EFE5D5"/>
+  <text x="70" y="150" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#B8A68A" letter-spacing="2">BLANK</text>
+</svg>
