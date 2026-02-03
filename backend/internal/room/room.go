@@ -43,6 +43,10 @@ type GameRoom struct {
 
 func NewGameRoom(gameState *game.Game) *GameRoom {
 	roomID := uuid.Must(uuid.NewV4()).String()
+	return NewGameRoomWithID(gameState, roomID)
+}
+
+func NewGameRoomWithID(gameState *game.Game, roomID string) *GameRoom {
 	return &GameRoom{
 		ID:          roomID,
 		Game:        gameState,

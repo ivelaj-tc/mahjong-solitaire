@@ -26,7 +26,7 @@ export default function PlayerBoard({
     let hasMatchingFaceup = false;
     for (let col = 0; col < player.board[0].length; col += 1) {
       let matchAnchor: Tile | null = null;
-      for (let row = player.board.length - 1; row >= 0; row -= 1) {
+      for (let row = 0; row < player.board.length; row += 1) {
         const cell = player.board[row][col];
         if (cell.id !== 0) {
           matchAnchor = cell;
@@ -39,7 +39,7 @@ export default function PlayerBoard({
       }
     }
     let anchor: Tile | null = null;
-    for (let row = player.board.length - 1; row >= 0; row -= 1) {
+    for (let row = 0; row < player.board.length; row += 1) {
       const cell = player.board[row][column];
       if (cell.id !== 0) {
         anchor = cell;

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend
+  namespace: mahjong-solitaire
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: frontend-read-configmaps
+  namespace: mahjong-solitaire
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: frontend-read-configmaps
+  namespace: mahjong-solitaire
+subjects:
+  - kind: ServiceAccount
+    name: frontend
+    namespace: mahjong-solitaire
+roleRef:
+  kind: Role
+  name: frontend-read-configmaps
+  apiGroup: rbac.authorization.k8s.io

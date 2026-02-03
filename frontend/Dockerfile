@@ -7,8 +7,8 @@ RUN npm ci
 
 COPY . .
 
-ARG NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
-ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+ARG NEXT_PUBLIC_BACKEND_URL=
+ENV NEXT_PUBLIC_BACKEND_URL=
 
 RUN npm run build
 
@@ -21,7 +21,10 @@ ENV NODE_ENV=production
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

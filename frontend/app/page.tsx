@@ -17,8 +17,13 @@ interface WSMessage {
   payload: unknown;
 }
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+const runtimeEnv =
+  typeof window !== "undefined" && "__ENV__" in window
+    ? ((window as typeof window & { __ENV__?: Record<string, string> }).__ENV__ ?? {})
+    : {};
+const backendUrl = runtimeEnv.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
 const WS_URL =
+  runtimeEnv.NEXT_PUBLIC_WS_URL ||
   process.env.NEXT_PUBLIC_WS_URL ||
   (backendUrl
     ? `${backendUrl.replace(/^http/, "ws").replace(/\/$/, "")}/ws`

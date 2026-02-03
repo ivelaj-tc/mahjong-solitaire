@@ -1,16 +1,19 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 
 	"mahjong-backend/internal/game"
 	"mahjong-backend/internal/room"
+	"mahjong-backend/internal/store"
 )
 
 type Server struct {
@@ -19,7 +22,12 @@ type Server struct {
 	availableCategories []game.Category
 	waitingRoom         *room.GameRoom
 	gamesMux            sync.Mutex
+	rooms               map[string]*room.GameRoom
 	upgrader            websocket.Upgrader
+	redisStore          *store.RedisStore
+	redisCtx            context.Context
+	redisCancel         context.CancelFunc
+	serverID            string
 }
 
 type Client struct {
@@ -61,15 +69,26 @@ func NewServer(
 	categorySymbols map[game.Category][]string,
 	categoryFileTypes map[game.Category]string,
 	availableCategories []game.Category,
+	redisStore *store.RedisStore,
 ) *Server {
-	return &Server{
+	ctx, cancel := context.WithCancel(context.Background())
+	server := &Server{
 		categorySymbols:     categorySymbols,
 		categoryFileTypes:   categoryFileTypes,
 		availableCategories: append([]game.Category{}, availableCategories...),
+		rooms:               make(map[string]*room.GameRoom),
+		redisStore:          redisStore,
+		redisCtx:            ctx,
+		redisCancel:         cancel,
+		serverID:            uuid.Must(uuid.NewV4()).String(),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
 	}
+	if redisStore != nil {
+		go server.subscribeRedis()
+	}
+	return server
 }
 
 func (c *Client) SendChannel() chan []byte {
@@ -83,6 +102,149 @@ func (c *Client) sendMessage(msgType string, payload interface{}) {
 	select {
 	case c.Send <- msgBytes:
 	default:
+	}
+}
+
+func (s *Server) registerRoom(gameRoom *room.GameRoom) {
+	if gameRoom == nil {
+		return
+	}
+	s.gamesMux.Lock()
+	s.rooms[gameRoom.ID] = gameRoom
+	s.gamesMux.Unlock()
+}
+
+func (s *Server) subscribeRedis() {
+	if s.redisStore == nil {
+		return
+	}
+	err := s.redisStore.SubscribeRoomUpdates(s.redisCtx, s.handleRedisRoomState)
+	if err != nil && s.redisCtx.Err() == nil {
+		log.Printf("Redis subscription stopped: %v", err)
+	}
+}
+
+func (s *Server) handleRedisRoomState(state store.RoomState) {
+	if state.SourceID == s.serverID {
+		return
+	}
+	gameRoom := s.getRoomByID(state.RoomID)
+	if gameRoom == nil {
+		return
+	}
+	gameRoom.Mutex.Lock()
+	gameRoom.Game = store.GameFromSnapshot(state.Game, s.categorySymbols)
+	gameRoom.RefreshTimersLocked()
+	gameRoom.Mutex.Unlock()
+	s.sendGameStateToRoom(gameRoom, gameRoom.Game)
+}
+
+func (s *Server) getRoomByID(roomID string) *room.GameRoom {
+	s.gamesMux.Lock()
+	gameRoom := s.rooms[roomID]
+	s.gamesMux.Unlock()
+	return gameRoom
+}
+
+func (s *Server) getOrLoadRoom(ctx context.Context, roomID string) (*room.GameRoom, error) {
+	if roomID == "" {
+		return nil, nil
+	}
+	if existing := s.getRoomByID(roomID); existing != nil {
+		return existing, nil
+	}
+	if s.redisStore == nil {
+		return nil, nil
+	}
+
+	snapshot, found, err := s.redisStore.LoadRoom(ctx, roomID)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, nil
+	}
+	gameState := store.GameFromSnapshot(snapshot, s.categorySymbols)
+	gameRoom := room.NewGameRoomWithID(gameState, roomID)
+	gameRoom.OnStateChange = s.broadcastState
+	gameRoom.Mutex.Lock()
+	gameRoom.RefreshTimersLocked()
+	gameRoom.Mutex.Unlock()
+	s.registerRoom(gameRoom)
+	return gameRoom, nil
+}
+
+func (s *Server) loadWaitingRoom(ctx context.Context) (*room.GameRoom, string, error) {
+	if s.redisStore == nil {
+		return nil, "", nil
+	}
+	roomID, ok, err := s.redisStore.GetWaitingRoomID(ctx)
+	if err != nil || !ok {
+		return nil, roomID, err
+	}
+	gameRoom, err := s.getOrLoadRoom(ctx, roomID)
+	if err != nil {
+		return nil, roomID, err
+	}
+	if gameRoom == nil {
+		if clearErr := s.redisStore.ClearWaitingRoomID(ctx, roomID); clearErr != nil {
+			log.Printf("Failed to clear stale waiting room %s: %v", roomID, clearErr)
+		}
+	}
+	return gameRoom, roomID, nil
+}
+
+func (s *Server) getOrCreateWaitingRoom() *room.GameRoom {
+	if s.redisStore == nil {
+		s.gamesMux.Lock()
+		if s.waitingRoom == nil || len(s.waitingRoom.Game.Players) >= 2 {
+			s.waitingRoom = s.newGameRoom()
+		}
+		gameRoom := s.waitingRoom
+		s.gamesMux.Unlock()
+		return gameRoom
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	if gameRoom, _, err := s.loadWaitingRoom(ctx); err != nil {
+		log.Printf("Failed to load waiting room: %v", err)
+	} else if gameRoom != nil {
+		return gameRoom
+	}
+
+	newRoom := s.newGameRoom()
+	ok, err := s.redisStore.SetWaitingRoomID(ctx, newRoom.ID)
+	if err != nil {
+		log.Printf("Failed to set waiting room: %v", err)
+		return newRoom
+	}
+	if ok {
+		return newRoom
+	}
+	if gameRoom, _, err := s.loadWaitingRoom(ctx); err == nil && gameRoom != nil {
+		return gameRoom
+	}
+	return newRoom
+}
+
+func (s *Server) clearWaitingRoom(roomID string) {
+	if roomID == "" {
+		return
+	}
+	if s.redisStore == nil {
+		s.gamesMux.Lock()
+		if s.waitingRoom != nil && s.waitingRoom.ID == roomID {
+			s.waitingRoom = nil
+		}
+		s.gamesMux.Unlock()
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := s.redisStore.ClearWaitingRoomID(ctx, roomID); err != nil {
+		log.Printf("Failed to clear waiting room %s: %v", roomID, err)
 	}
 }
 
@@ -180,6 +342,7 @@ func (s *Server) newGameRoom() *room.GameRoom {
 	gameState := game.NewGame(s.categorySymbols, s.categoryFileTypes, s.availableCategories)
 	gameRoom := room.NewGameRoom(gameState)
 	gameRoom.OnStateChange = s.broadcastState
+	s.registerRoom(gameRoom)
 	return gameRoom
 }
 
@@ -188,12 +351,7 @@ func (s *Server) handleJoin(c *Client, msg JoinMessage) {
 	if msg.WithBot {
 		gameRoom = s.newGameRoom()
 	} else {
-		s.gamesMux.Lock()
-		if s.waitingRoom == nil || len(s.waitingRoom.Game.Players) >= 2 {
-			s.waitingRoom = s.newGameRoom()
-		}
-		gameRoom = s.waitingRoom
-		s.gamesMux.Unlock()
+		gameRoom = s.getOrCreateWaitingRoom()
 	}
 
 	gameRoom.Mutex.Lock()
@@ -234,11 +392,7 @@ func (s *Server) handleJoin(c *Client, msg JoinMessage) {
 		gameRoom.Game.StatusMessage = "Both players joined. Choose your categories."
 		gameRoom.RefreshTimersLocked()
 		if !msg.WithBot {
-			s.gamesMux.Lock()
-			if s.waitingRoom == gameRoom {
-				s.waitingRoom = nil
-			}
-			s.gamesMux.Unlock()
+			s.clearWaitingRoom(gameRoom.ID)
 		}
 	}
 	gameRoom.Mutex.Unlock()
@@ -315,10 +469,57 @@ func (s *Server) handleReset(c *Client) {
 }
 
 func (s *Server) broadcastState(gameRoom *room.GameRoom) {
-	data, _ := json.Marshal(gameRoom.Game)
-	msg := WSMessage{Type: "gameState", Payload: data}
-	msgBytes, _ := json.Marshal(msg)
+	gameRoom.Mutex.Lock()
+	snapshot := store.SnapshotFromGame(gameRoom.Game)
+	gameRoom.Mutex.Unlock()
 
+	gameState := store.GameFromSnapshot(snapshot, s.categorySymbols)
+	s.sendGameStateToRoom(gameRoom, gameState)
+	s.persistRoomState(gameRoom.ID, snapshot)
+}
+
+func (s *Server) persistRoomState(roomID string, snapshot store.GameSnapshot) {
+	if s.redisStore == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	if err := s.redisStore.SaveRoom(ctx, roomID, snapshot); err != nil {
+		log.Printf("Redis save failed for room %s: %v", roomID, err)
+	}
+	state := store.RoomState{
+		RoomID:   roomID,
+		SourceID: s.serverID,
+		Game:     snapshot,
+	}
+	if err := s.redisStore.PublishRoomState(ctx, state); err != nil {
+		log.Printf("Redis publish failed for room %s: %v", roomID, err)
+	}
+}
+
+func (s *Server) sendGameStateToRoom(gameRoom *room.GameRoom, gameState *game.Game) {
+	msgBytes, err := s.buildGameStateMessage(gameState)
+	if err != nil {
+		return
+	}
+	s.sendToRoomClients(gameRoom, msgBytes)
+}
+
+func (s *Server) buildGameStateMessage(gameState *game.Game) ([]byte, error) {
+	data, err := json.Marshal(gameState)
+	if err != nil {
+		return nil, err
+	}
+	msg := WSMessage{Type: "gameState", Payload: data}
+	msgBytes, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return msgBytes, nil
+}
+
+func (s *Server) sendToRoomClients(gameRoom *room.GameRoom, msgBytes []byte) {
 	for client := range gameRoom.Clients {
 		select {
 		case client.SendChannel() <- msgBytes:

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-replica
+  namespace: mahjong-solitaire
+spec:
+  serviceName: redis-replica
+  replicas: 2
+  selector:
+    matchLabels:
+      app: redis
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: replica
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+          args:
+            - redis-server
+            - --appendonly
+            - "yes"
+            - --appendfilename
+            - appendonly.aof
+            - --dir
+            - /data
+            - --replicaof
+            - redis-master-0.redis-master
+            - "6379"
+            - --bind
+            - 0.0.0.0
+            - --protected-mode
+            - "no"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

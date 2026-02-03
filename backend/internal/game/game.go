@@ -392,17 +392,8 @@ func (g *Game) findMatchingColumn(playerID int, tile *Tile) int {
 	matching := make([]int, 0)
 	empty := make([]int, 0)
 	for col := 0; col < BoardWidth; col++ {
-		anchorFound := false
-		var anchor Tile
-		for row := BoardHeight - 1; row >= 0; row-- {
-			cell := board[row][col]
-			if cell.ID != 0 {
-				anchor = cell
-				anchorFound = true
-				break
-			}
-		}
-		if !anchorFound {
+		anchor := getColumnAnchor(board, col)
+		if anchor == nil {
 			empty = append(empty, col)
 			continue
 		}
@@ -435,38 +426,36 @@ func (g *Game) canPushColumn(playerID, column int, tile *Tile) bool {
 	board := g.Players[playerID].Board
 	hasMatchingFaceup := false
 	for col := 0; col < BoardWidth; col++ {
-		matchFound := false
-		var matchAnchor Tile
-		for row := BoardHeight - 1; row >= 0; row-- {
-			cell := board[row][col]
-			if cell.ID != 0 {
-				matchAnchor = cell
-				matchFound = true
-				break
-			}
-		}
-		if matchFound && (matchAnchor.Category == CategoryBlank || matchAnchor.Symbol == tile.Symbol) {
+		anchor := getColumnAnchor(board, col)
+		if anchor != nil && (anchor.Category == CategoryBlank || anchor.Symbol == tile.Symbol) {
 			hasMatchingFaceup = true
 			break
 		}
 	}
-	columnAnchorFound := false
-	var columnAnchor Tile
-	for row := BoardHeight - 1; row >= 0; row-- {
-		cell := board[row][column]
-		if cell.ID != 0 {
-			columnAnchor = cell
-			columnAnchorFound = true
-			break
-		}
-	}
-	if !columnAnchorFound {
+	columnAnchor := getColumnAnchor(board, column)
+	if columnAnchor == nil {
 		return !hasMatchingFaceup
 	}
 	if columnAnchor.Category == CategoryBlank {
 		return true
 	}
 	return columnAnchor.Symbol == tile.Symbol
+}
+
+func getColumnAnchor(board [][]Tile, column int) *Tile {
+	for row := 0; row < BoardHeight; row++ {
+		cell := board[row][column]
+		if cell.ID != 0 && cell.Category != CategoryBlank {
+			return &cell
+		}
+	}
+	for row := 0; row < BoardHeight; row++ {
+		cell := board[row][column]
+		if cell.ID != 0 {
+			return &cell
+		}
+	}
+	return nil
 }
 
 func (g *Game) hasValidMove(playerID int, tile *Tile) bool {

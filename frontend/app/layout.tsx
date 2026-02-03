@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cinzel, Manrope } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -32,6 +33,7 @@ export default function RootLayout({
 			<body
 				className={`${manrope.variable} ${cinzel.variable} antialiased`}
 			>
+				<Script src="/runtime-env.js" strategy="beforeInteractive" />
 				{children}
 			</body>
 		</html>

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel
+  namespace: mahjong-solitaire
+spec:
+  serviceName: redis-sentinel
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: redis-sentinel
+    spec:
+      initContainers:
+        - name: sentinel-init
+          image: redis:7.2-alpine
+          command:
+            - sh
+            - -c
+            - cp /config/sentinel.conf /data/sentinel.conf
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+      containers:
+        - name: sentinel
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 26379
+          command:
+            - redis-server
+            - /data/sentinel.conf
+            - --sentinel
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: redis-sentinel-config
+        - name: data
+          emptyDir: {}
