@@ -13,12 +13,12 @@ echo "=== Building and deploying with tag: $TAG ==="
 # Build backend
 echo ""
 echo "=== Building backend ==="
-docker build --platform=linux/amd64 -t "$BACKEND_IMAGE:$TAG" "$SCRIPT_DIR/backend"
+docker build -t "$BACKEND_IMAGE:$TAG" "$SCRIPT_DIR/backend"
 
 # Build frontend
 echo ""
 echo "=== Building frontend ==="
-docker build --platform=linux/amd64 -t "$FRONTEND_IMAGE:$TAG" "$SCRIPT_DIR/frontend"
+docker build -t "$FRONTEND_IMAGE:$TAG" "$SCRIPT_DIR/frontend"
 
 # Push images
 echo ""
@@ -51,6 +51,13 @@ kubectl apply -f "$SCRIPT_DIR/k8s/frontend-configmap.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-deployment.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-service.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/traefik-ingress.yaml"
+
+# Load images into kind cluster (if using kind)
+if kind get clusters 2>/dev/null | grep -q .; then
+  echo ""
+  echo "=== Loading images into kind cluster ==="
+  kind load docker-image "$BACKEND_IMAGE:$TAG" "$FRONTEND_IMAGE:$TAG" --name kind
+fi
 
 # Restart deployments to pick up new images
 echo ""
