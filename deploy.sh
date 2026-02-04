@@ -50,6 +50,8 @@ kubectl apply -f "$SCRIPT_DIR/k8s/backend-service.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-configmap.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-deployment.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-service.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/backend-hpa.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/frontend-hpa.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/traefik-ingress.yaml"
 
 # Load images into kind cluster (if using kind)
