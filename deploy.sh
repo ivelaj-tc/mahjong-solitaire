@@ -52,6 +52,11 @@ kubectl apply -f "$SCRIPT_DIR/k8s/frontend-deployment.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-service.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/backend-hpa.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/frontend-hpa.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/backend-pdb.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/frontend-pdb.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/redis-master-pdb.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/redis-replica-pdb.yaml"
+kubectl apply -f "$SCRIPT_DIR/k8s/redis-sentinel-pdb.yaml"
 kubectl apply -f "$SCRIPT_DIR/k8s/traefik-ingress.yaml"
 
 # Load images into kind cluster (if using kind)

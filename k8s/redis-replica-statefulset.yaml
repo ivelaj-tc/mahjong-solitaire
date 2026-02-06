@@ -16,12 +16,35 @@ spec:
         app: redis
         role: replica
     spec:
+      nodeSelector:
+        nodepool: data
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "data"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: redis
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: redis
           image: redis:7.2-alpine
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "400m"
+              memory: "512Mi"
           args:
             - redis-server
             - --appendonly

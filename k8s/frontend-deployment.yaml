@@ -13,6 +13,13 @@ spec:
       labels:
         app: frontend
     spec:
+      nodeSelector:
+        nodepool: app
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "app"
+          effect: "NoSchedule"
       containers:
         - name: frontend
           image: hungrycoexistance51/mahjong-solitarie-front:latest

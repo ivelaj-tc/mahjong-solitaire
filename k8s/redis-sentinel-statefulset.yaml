@@ -14,6 +14,22 @@ spec:
       labels:
         app: redis-sentinel
     spec:
+      nodeSelector:
+        nodepool: data
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "data"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: redis-sentinel
+                topologyKey: kubernetes.io/hostname
       initContainers:
         - name: sentinel-init
           image: redis:7.2-alpine
@@ -32,6 +48,13 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 26379
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
           command:
             - redis-server
             - /data/sentinel.conf
